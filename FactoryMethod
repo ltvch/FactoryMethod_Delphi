@@ -1,0 +1,103 @@
+program FactoryMethod;
+(*
+  *Фабричный метод определяет интерфейс создания объекта,
+  *но оставляет подклассам решение о том, какой класс инстанциировать.
+  *Таким образом фабричный метод позволяет классу делегировать создание экземпляров субклассам.
+
+  *Используется когда классу заранее неизвестно,
+  *объекты каких подклассов ему нужно создавать или класс спроектирован так,
+  *чтобы объекты, которые он создаёт, специфицировались подклассами.
+*)
+
+(*
+  *Создает объекты разных типов, позволяя системе оставаться независимой как от
+  *самого процесса создания, так и от типов создаваемых объектов.
+*)
+
+{$APPTYPE CONSOLE}
+{$R *.res}
+
+uses
+  System.SysUtils;
+
+type
+  (*abstact product*)
+  TAutoCar = class abstract
+    function GetCar: string; virtual; abstract;
+  end;
+
+   (*concrete product*)
+  TToyota = class(TAutoCar)
+    public
+      function GetCar(): string; override;
+  end;
+  (*concrete product*)
+  TNissan = class(TAutoCar)
+    public
+      function GetCar(): string; override;
+  end;
+
+  (*abstract factory*)
+  TCreator = class abstract
+    function CreateCar: TAutoCar; virtual; abstract;
+  end;
+
+
+  TNissanFactory = class(TCreator)
+    function CreateCar: TAutoCar; override;
+  end;
+
+  TToyotaFactory = class(TCreator)
+    function CreateCar: TAutoCar; override;
+  end;
+
+{ TToyota }
+
+function TToyota.GetCar: string;
+begin
+  Result:= 'Toyota';
+end;
+
+{ TNissan }
+
+function TNissan.GetCar: string;
+begin
+  Result:= 'Nissan';
+end;
+
+{ TNisanFactory }
+
+function TNissanFactory.CreateCar: TAutoCar;
+begin
+  Result:= TNissan.Create;
+end;
+
+{ TToyotaFactory }
+
+function TToyotaFactory.CreateCar: TAutoCar;
+begin
+  Result:= TToyota.Create;
+end;
+
+var creator: TCreator; auto: TAutoCar;
+
+begin
+  try
+    { TODO -oUser -cConsole Main : Insert code here }
+    creator:= TNissanFactory.Create; //fabric
+    auto:= creator.CreateCar; //product
+    WriteLn(auto.GetCar);
+
+    (*one interface inside abstract class -> a lot of realizations*)
+
+    creator:= TToyotaFactory.Create;//fabric
+    auto:= creator.CreateCar;//product
+    WriteLn(auto.GetCar);
+
+    ReadLn;
+  except
+    on E: Exception do
+      Writeln(E.ClassName, ': ', E.Message);
+  end;
+
+end.
